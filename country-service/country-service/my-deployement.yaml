@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-compte-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: country-service
+  template:
+    metadata:
+      labels:
+        app: country-service
+    spec:
+      containers:
+        - name: country-service-container
+          image: sha256:1a919207d54a11b44c28cebbe8b208ba1c020f7b138187a4405b07a39e249aa1
+          ports:
+            - containerPort: 8082
