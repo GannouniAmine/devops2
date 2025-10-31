@@ -74,7 +74,10 @@ pipeline {
                     url: 'https://github.com/GannouniAmine/devops2.git'
 
                
-                sh 'mvn clean install -f country-service/pom.xml'
+                dir('country-service') {
+                            sh 'chmod +x mvnw'
+                            sh './mvnw clean install'
+                }
             }
         }
 
