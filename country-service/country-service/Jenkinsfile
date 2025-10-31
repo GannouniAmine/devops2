@@ -50,3 +50,57 @@ pipeline {
         }
     }
 }
+
+
+
+
+
+
+
+/*
+pipeline {
+    agent any
+
+    tools {
+        maven 'M2_HOME'
+    }
+
+    stages {
+        stage('Checkout & Build') {
+            steps {
+                
+                git branch: 'main', 
+                    url: 'https://github.com/GannouniAmine/devops2.git'
+
+               
+                sh 'mvn clean install -f country-service/pom.xml'
+            }
+        }
+
+        stage('Build & Push Docker') {
+            steps {
+                dir('country-service') {
+                   
+                    sh 'docker build -t my-country-service:${BUILD_NUMBER} .'
+
+                   
+                    withCredentials([string(credentialsId: 'dockerhub-password', variable: 'dockerhubpwd')]) {
+                        sh 'docker login -u amine339 -p ${dockerhubpwd}'
+                       
+                    }
+                     sh 'docker tag my-country-service:${BUILD_NUMBER} amine339/my-country-service:${BUILD_NUMBER}'
+                     sh 'docker push amine339/my-country-service:${BUILD_NUMBER}'
+                }
+            }
+        }
+
+        stage('Deploy microservice') {
+            steps {
+                sh 'docker rm -f my-country-service'
+                sh 'docker run -d -p 8082:8082 amine339/my-country-service:${BUILD_NUMBER}'
+            }
+        }
+    }
+}
+*/
+
