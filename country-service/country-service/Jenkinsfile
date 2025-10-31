@@ -2,110 +2,51 @@ pipeline {
     agent any
 
     tools {
-        jdk 'JDK21'
-        maven 'M2_HOME'
+        maven 'M2_HOME' 
     }
 
     environment {
-        SONARQUBE_ENV = 'SonarQubeServer'
-        MAVEN_OPTS = '-Dmaven.test.failure.ignore=true' // Ignore test failures
+        DOCKER_HUB_USER = 'amine339'
     }
 
     stages {
-
-        stage('Checkout') {
+        stage('Checkout code') {
             steps {
-                git branch: 'master',
-                    url: 'https://github.com/MiroJlassi/Devops.git',
-                    credentialsId: '508b45eb-b710-404a-b267-6ae7e8846a8c'
+                git branch: 'main', url: 'https://github.com/GannouniAmine/devops2.git'
             }
         }
 
-        stage('Workspace Info') {
-            steps {
-                echo "=== Jenkins Workspace Info ==="
-                sh 'pwd && ls -la'
-                echo "=== OS Info ==="
-                sh 'uname -a || ver'
-            }
-        }
-
-        stage('Build') {
+        stage('Build Maven') {
             steps {
                 dir('country-service') {
-                    echo "=== Building country-service module ==="
-                    sh 'mvn clean compile -DskipTests'
+                    sh 'chmod +x mvnw'
+                    sh './mvnw clean install'
                 }
             }
         }
 
-        stage('Package') {
+        stage('Build Docker File') {
             steps {
                 dir('country-service') {
-                    echo "=== Packaging country-service WAR ==="
-                    sh 'mvn clean package -DskipTests'
-                }
-            }
-        }
-
-        stage('Run Tests (Skipped)') {
-            steps {
-                dir('country-service') {
-                    echo "=== Skipping tests for CI/CD deployment ==="
-                    // sh 'mvn test -DskipTests'
-                }
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                dir('country-service') {
-                    withCredentials([string(credentialsId: '6e730859-3f34-4e66-bf56-6ef811768863', variable: 'SONAR_TOKEN')]) {
-                        sh """
-                            mvn sonar:sonar \
-                                -Dsonar.projectKey=country-service \
-                                -Dsonar.projectName='Country Service' \
-                                -Dsonar.host.url=http://host.docker.internal:9000 \
-                                -Dsonar.login='${SONAR_TOKEN}' \
-                                -DskipTests
-                        """
+                    sh 'docker build -t my-country-service:${BUILD_NUMBER} .'
+                    withCredentials([string(credentialsId: 'dockerhub-password', variable: 'dockerhubpwd')]) {
+                         sh 'docker login -u amine339 -p ${dockerhubpwd}'
                     }
+                    sh 'docker tag my-country-service:${BUILD_NUMBER} amine339/my-country-service:${BUILD_NUMBER}'
+                    sh 'docker push amine339/my-country-service:${BUILD_NUMBER}'
                 }
             }
         }
 
-        stage('Deploy to Nexus') {
+        stage('Deploy to Kubernetes') {
             steps {
-                dir('country-service') {
-                    sh 'mvn clean deploy -DskipTests -s /var/jenkins_home/.m2/settings.xml'
+                 withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG')]) {
+                   
+                       sh 'kubectl apply -f country-service/country-service/my-deployment.yaml'
+                       sh 'kubectl apply -f country-service/country-service/service.yaml'
+                    
                 }
             }
-        }
-
-        stage('Deploy to Tomcat') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'tomcat-creds', usernameVariable: 'TOMCAT_USER', passwordVariable: 'TOMCAT_PASS')]) {
-                    echo "=== Deploying country-service WAR to Tomcat ==="
-                    dir('country-service') {
-                        sh '''
-                            ls -l target/
-                            WAR_FILE=$(ls target/country-service-*.war | head -n 1)
-                            echo "Deploying $WAR_FILE ..."
-                            curl -T "$WAR_FILE" "http://host.docker.internal:8085/manager/text/deploy?path=/country-service&update=true" --user $TOMCAT_USER:$TOMCAT_PASS
-                        '''
-                    }
-                }
-            }
-        }
-
-    }
-
-    post {
-        success {
-            echo '✅ Build, SonarQube Analysis, Nexus Deployment, and Tomcat Deployment completed successfully!'
-        }
-        failure {
-            echo '❌ Pipeline failed. Check logs for errors.'
         }
     }
 }
