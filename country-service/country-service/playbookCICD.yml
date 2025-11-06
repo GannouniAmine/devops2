@@ -1,5 +1,5 @@
 - name: Build and Deploy Docker Image to Kubernetes
-  hosts: localhost
+  hosts: localhost # or your build/deployment server
   connection: local
 
   vars:
@@ -23,49 +23,54 @@
         source: build
         state: present
         push: true
-
     - name: Push the Docker image to Docker Hub
       docker_image:
         name: "{{ lookup('env', 'DOCKER_USERNAME') }}/{{ image_name }}:{{ image_tag }}"
         push: yes
         source: local
 
-    - name: Pull Docker image (optional, for verification)
+    - name: Pull Docker image (optional, for verification or on target nodes)
       docker_image:
         name: "{{ lookup('env', 'DOCKER_USERNAME') }}/{{ image_name }}:{{ image_tag }}"
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Check for Jenkins-provided venv python
-      ansible.builtin.stat:
-        path: /var/jenkins_home/ansible_venv/bin/python3
-      register: jenkins_venv
-      changed_when: false
+    - name: Install pip if not present
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+      become: true
 
-    - name: Set ansible to use Jenkins venv Python
-      ansible.builtin.set_fact:
-        ansible_python_interpreter: /var/jenkins_home/ansible_venv/bin/python3
-      when: jenkins_venv.stat.exists
+    - name: Install virtualenv package
+      ansible.builtin.pip:
+        name: virtualenv
+        state: present
+      become: true
 
-    - name: Install kubernetes package in Jenkins venv if missing
+    - name: Create virtual environment
+      ansible.builtin.command:
+        cmd: python3 -m venv "{{ ansible_env.HOME }}/.local/venv"
+        creates: "{{ ansible_env.HOME }}/.local/venv"
+
+    - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
         name: kubernetes
         state: present
-        virtualenv: /var/jenkins_home/ansible_venv
+        virtualenv: "{{ ansible_env.HOME }}/.local/venv"
         virtualenv_command: python3 -m venv
-      when: jenkins_venv.stat.exists
+      environment:
+        PATH: "{{ ansible_env.HOME }}/.local/venv/bin:{{ ansible_env.PATH }}"
 
-    - name: Set ansible to use system python if no venv
+    - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
-        ansible_python_interpreter: /usr/bin/python3
-      when: not jenkins_venv.stat.exists
+        ansible_python_interpreter: "{{ ansible_env.HOME }}/.local/venv/bin/python3"
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
         state: present
         namespace: jenkins
         src: my-deployment.yaml
-        kubeconfig: config
+        kubeconfig: config # Path to your kubeconfig file
 
     - name: Apply Kubernetes Service
       kubernetes.core.k8s:
