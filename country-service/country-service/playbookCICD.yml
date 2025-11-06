@@ -39,14 +39,16 @@
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Ensure python3-venv is installed
-      become: yes
-      ansible.builtin.package:
-        name: python3-venv
-        state: present
-      tags: always
+    - name: Create .local/bin directory if it doesn't exist
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.local/bin"
+        state: directory
+        mode: '0755'
 
-    - name: Create virtual environment
+    - name: Create virtual environment in user space
+      ansible.builtin.command:
+        cmd: python3 -m venv "{{ ansible_env.HOME }}/.local/venv"
+        creates: "{{ ansible_env.HOME }}/.local/venv"
       ansible.builtin.command:
         cmd: python3 -m venv /tmp/ansible_venv
         creates: /tmp/ansible_venv
@@ -55,13 +57,13 @@
       ansible.builtin.pip:
         name: kubernetes
         state: present
-        virtualenv: /tmp/ansible_venv
+        virtualenv: "{{ ansible_env.HOME }}/.local/venv"
       environment:
-        PATH: "/tmp/ansible_venv/bin:{{ ansible_env.PATH }}"
+        PATH: "{{ ansible_env.HOME }}/.local/venv/bin:{{ ansible_env.PATH }}"
 
     - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
-        ansible_python_interpreter: /tmp/ansible_venv/bin/python3
+        ansible_python_interpreter: "{{ ansible_env.HOME }}/.local/venv/bin/python3"
         state: present
       tags: always
 
