@@ -111,6 +111,12 @@ pipeline {
     tools {
         maven 'M2_HOME'
     }
+    options {
+        timestamps()
+    }
+    environment {
+        ANSIBLE_PYTHON_INTERPRETER = "$HOME/.local/venv/bin/python3"
+    }
     stages {
         stage('Checkout code') {
             steps {
@@ -123,6 +129,17 @@ pipeline {
                 dir('country-service/country-service') {
                     sh 'mvn clean install'
                 }
+            }
+        }
+
+        stage('Prepare Environment') {
+            steps {
+                sh '''
+                    apt-get update
+                    apt-get install -y python3.13-venv python3-pip
+                    python3 -m venv $HOME/.local/venv
+                    $HOME/.local/venv/bin/pip install kubernetes
+                '''
             }
         }
 
