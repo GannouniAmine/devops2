@@ -129,8 +129,13 @@ pipeline {
         stage('Deploy using Ansible playbook') {
             steps {
                 dir('country-service/country-service') {
-                    script {
-                        sh 'ansible-playbook -i hosts playbookCICD.yml --check'
+                    withEnv([
+                        "DOCKER_USERNAME=amine339",
+                        "DOCKER_PASSWORD=2014@Tunis"
+                    ]) {
+                        sh '''
+                        ansible-playbook -i hosts playbookCICD.yml
+                        '''
                     }
                 }
             }

@@ -6,52 +6,34 @@
     image_name: my-country-service
     image_tag: v1
     dockerfile_path: .
-    docker_registry_username: "{{ docker_registry_username }}"
-    docker_registry_password: "{{ docker_registry_password }}"
 
   tasks:
     - name: Log in to Docker Hub
       community.general.docker_login:
-        username: "{{ docker_registry_username }}"
-        password: "{{ docker_registry_password }}" # Use environment variable for password
-        # or use Ansible Vault for sensitive data
-        # password: "{{ docker_hub_password_from_vault }}"
-        reauthorize: yes # Re-authenticate even if credentials exist
+        username: "{{ lookup('env', 'DOCKER_USERNAME') }}"
+        password: "{{ lookup('env', 'DOCKER_PASSWORD') }}"
+        reauthorize: yes
 
     - name: Build Docker image
       docker_image:
         build:
           path: "{{ dockerfile_path }}"
-        name: "{{ docker_registry_username }}/{{ image_name }}"
+        name: "{{ lookup('env', 'DOCKER_USERNAME') }}/{{ image_name }}"
         tag: "{{ image_tag }}"
         source: build
         state: present
         push: true
-    - name: Push the Docker image to Docker Hub
-      docker_image:
-        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
-        push: yes
-        source: local
 
     - name: Pull Docker image (optional, for verification or on target nodes)
       docker_image:
-        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
+        name: "{{ lookup('env', 'DOCKER_USERNAME') }}/{{ image_name }}:{{ image_tag }}"
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Create .local/bin directory if it doesn't exist
-      ansible.builtin.file:
-        path: "{{ ansible_env.HOME }}/.local/bin"
-        state: directory
-        mode: '0755'
-
-    - name: Create virtual environment in user space
+    - name: Create virtual environment
       ansible.builtin.command:
         cmd: python3 -m venv "{{ ansible_env.HOME }}/.local/venv"
         creates: "{{ ansible_env.HOME }}/.local/venv"
-      ansible.builtin.command:
-        cmd: python3 -m venv /tmp/ansible_venv
-        creates: /tmp/ansible_venv
 
     - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
@@ -64,16 +46,6 @@
     - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
         ansible_python_interpreter: "{{ ansible_env.HOME }}/.local/venv/bin/python3"
-        state: present
-      tags: always
-
-    - name: Ensure Python 'kubernetes' package is installed for Ansible k8s module
-      become: yes
-      ansible.builtin.pip:
-        name: kubernetes
-        state: present
-        executable: pip3
-      tags: always
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
