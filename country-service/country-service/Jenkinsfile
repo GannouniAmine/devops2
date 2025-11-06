@@ -126,15 +126,6 @@ pipeline {
             }
         }
 
-        stage('Prepare Python Environment') {
-            steps {
-                sh '''
-                    python3 -m venv /tmp/test-venv
-                    /tmp/test-venv/bin/pip install kubernetes
-                '''
-            }
-        }
-
         stage('Deploy using Ansible playbook') {
             steps {
                 dir('country-service/country-service') {
