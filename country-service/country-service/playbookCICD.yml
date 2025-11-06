@@ -51,7 +51,7 @@
       ansible.builtin.pip:
         name: kubernetes
         state: present
-        virtualenv: "{{ venv_path }}"
+        executable: "{{ venv_path }}/bin/pip"
         extra_args: --no-cache-dir
       environment:
         PATH: "{{ venv_path }}/bin:{{ ansible_env.PATH }}"
