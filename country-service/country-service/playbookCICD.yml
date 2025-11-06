@@ -52,7 +52,7 @@
     - name: Install kubernetes for system python using user site-packages if missing
       ansible.builtin.command:
         cmd: /usr/bin/python3 -m pip install --user kubernetes --no-cache-dir
-      when: kubernetes_check.rc != 0 and not jenkins_venv.stat.exists
+      when: "(kubernetes_check is defined and kubernetes_check.rc != 0) and not jenkins_venv.stat.exists"
 
     - name: Set ansible to use system python interpreter
       ansible.builtin.set_fact:
