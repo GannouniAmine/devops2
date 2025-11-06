@@ -30,18 +30,37 @@
         tag: "{{ image_tag }}"
         source: pull
 
+    - name: Create virtual environment directory
+      ansible.builtin.file:
+        path: /tmp/test-venv
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user_id }}"
+
     - name: Create virtual environment
       ansible.builtin.command:
         cmd: python3 -m venv /tmp/test-venv
         creates: /tmp/test-venv
+      environment:
+        PYTHONPATH: ""
+
+    - name: Fix virtual environment permissions
+      ansible.builtin.file:
+        path: /tmp/test-venv
+        state: directory
+        recurse: yes
+        mode: '0755'
+        owner: "{{ ansible_user_id }}"
 
     - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
         name: kubernetes
         state: present
         virtualenv: /tmp/test-venv
+        extra_args: --no-cache-dir
       environment:
         PATH: "/tmp/test-venv/bin:{{ ansible_env.PATH }}"
+        PYTHONPATH: ""
 
     - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
