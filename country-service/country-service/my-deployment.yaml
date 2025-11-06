@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: country-service-container
-          image: sha256:1a919207d54a11b44c28cebbe8b208ba1c020f7b138187a4405b07a39e249aa1
+          image: amine339/my-country-service:v1
           ports:
             - containerPort: 8082
 
