@@ -47,6 +47,30 @@
       environment:
         PYTHONPATH: ""
 
+    - name: Check if venv pip exists
+      ansible.builtin.stat:
+        path: "{{ venv_path }}/bin/pip"
+      register: venv_pip_stat
+
+    - name: Download get-pip.py to venv if pip is missing
+      ansible.builtin.get_url:
+        url: https://bootstrap.pypa.io/get-pip.py
+        dest: "{{ venv_path }}/get-pip.py"
+        mode: '0755'
+      when: not venv_pip_stat.stat.exists
+
+    - name: Bootstrap pip into venv using get-pip.py
+      ansible.builtin.command:
+        cmd: "{{ venv_path }}/bin/python {{ venv_path }}/get-pip.py"
+        creates: "{{ venv_path }}/bin/pip"
+      when: not venv_pip_stat.stat.exists
+
+    - name: Remove get-pip.py from venv
+      ansible.builtin.file:
+        path: "{{ venv_path }}/get-pip.py"
+        state: absent
+      when: not venv_pip_stat.stat.exists
+
     - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
         name: kubernetes
