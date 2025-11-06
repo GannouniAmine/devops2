@@ -39,6 +39,21 @@
         tag: "{{ image_tag }}"
         source: pull
 
+    - name: Ensure system package manager and pip are available (installs python3-pip)
+      become: yes
+      ansible.builtin.package:
+        name: python3-pip
+        state: present
+      tags: always
+
+    - name: Ensure Python 'kubernetes' package is installed for Ansible k8s module
+      become: yes
+      ansible.builtin.pip:
+        name: kubernetes
+        state: present
+        executable: pip3
+      tags: always
+
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
         state: present
