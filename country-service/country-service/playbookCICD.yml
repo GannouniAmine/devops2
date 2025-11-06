@@ -18,11 +18,16 @@
       docker_image:
         build:
           path: "{{ dockerfile_path }}"
-        name: "{{ lookup('env', 'DOCKER_USERNAME') }}/{{ image_name }}"
+        name: "{{ docker_registry_username }}/{{ image_name }}"
         tag: "{{ image_tag }}"
         source: build
         state: present
         push: true
+    - name: Push the Docker image to Docker Hub
+      docker_image:
+        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
+        push: yes
+        source: local
 
     - name: Pull Docker image (optional, for verification or on target nodes)
       docker_image:
@@ -30,41 +35,22 @@
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Create virtual environment directory
-      ansible.builtin.file:
-        path: /tmp/test-venv
-        state: directory
-        mode: '0755'
-        owner: "{{ ansible_user_id }}"
-
     - name: Create virtual environment
       ansible.builtin.command:
-        cmd: python3 -m venv /tmp/test-venv
-        creates: /tmp/test-venv
-      environment:
-        PYTHONPATH: ""
-
-    - name: Fix virtual environment permissions
-      ansible.builtin.file:
-        path: /tmp/test-venv
-        state: directory
-        recurse: yes
-        mode: '0755'
-        owner: "{{ ansible_user_id }}"
+        cmd: python3 -m venv "{{ ansible_env.HOME }}/.local/venv"
+        creates: "{{ ansible_env.HOME }}/.local/venv"
 
     - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
         name: kubernetes
         state: present
-        virtualenv: /tmp/test-venv
-        extra_args: --no-cache-dir
+        virtualenv: "{{ ansible_env.HOME }}/.local/venv"
       environment:
-        PATH: "/tmp/test-venv/bin:{{ ansible_env.PATH }}"
-        PYTHONPATH: ""
+        PATH: "{{ ansible_env.HOME }}/.local/venv/bin:{{ ansible_env.PATH }}"
 
     - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
-        ansible_python_interpreter: /tmp/test-venv/bin/python3
+        ansible_python_interpreter: "{{ ansible_env.HOME }}/.local/venv/bin/python3"
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
