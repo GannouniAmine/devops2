@@ -43,7 +43,7 @@
       kubernetes.core.k8s:
         state: present
         namespace: jenkins
-        src: deployment.yaml
+        src: my-deployment.yaml
         kubeconfig: config # Path to your kubeconfig file
 
     - name: Apply Kubernetes Service
