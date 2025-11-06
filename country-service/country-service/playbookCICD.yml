@@ -30,41 +30,35 @@
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Create virtual environment directory
+    - name: Ensure workspace virtualenv path exists (user-writable)
+      ansible.builtin.set_fact:
+        venv_path: "{{ playbook_dir | default('./') | regex_replace('/$','') }}/.venv"
+
+    - name: Create virtual environment directory (workspace .venv)
       ansible.builtin.file:
-        path: /tmp/test-venv
+        path: "{{ venv_path }}"
         state: directory
         mode: '0755'
-        owner: "{{ ansible_user_id }}"
 
-    - name: Create virtual environment
+    - name: Create virtual environment inside workspace
       ansible.builtin.command:
-        cmd: python3 -m venv /tmp/test-venv
-        creates: /tmp/test-venv
+        cmd: python3 -m venv "{{ venv_path }}"
+        creates: "{{ venv_path }}"
       environment:
         PYTHONPATH: ""
-
-    - name: Fix virtual environment permissions
-      ansible.builtin.file:
-        path: /tmp/test-venv
-        state: directory
-        recurse: yes
-        mode: '0755'
-        owner: "{{ ansible_user_id }}"
 
     - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
         name: kubernetes
         state: present
-        virtualenv: /tmp/test-venv
+        virtualenv: "{{ venv_path }}"
         extra_args: --no-cache-dir
       environment:
-        PATH: "/tmp/test-venv/bin:{{ ansible_env.PATH }}"
-        PYTHONPATH: ""
+        PATH: "{{ venv_path }}/bin:{{ ansible_env.PATH }}"
 
-    - name: Set fact for Python interpreter
+    - name: Set fact for Python interpreter to venv
       ansible.builtin.set_fact:
-        ansible_python_interpreter: /tmp/test-venv/bin/python3
+        ansible_python_interpreter: "{{ venv_path }}/bin/python3"
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
