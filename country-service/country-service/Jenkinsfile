@@ -132,8 +132,6 @@ pipeline {
                     sh 'ansible-playbook -i hosts playbookCICD.yml --vault-password-file vault_pass.txt'
                 }
             }
-        }         }
-            }
         }
     }
     post {
