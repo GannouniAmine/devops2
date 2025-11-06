@@ -1,42 +1,36 @@
 ---
-- name: Build and Deploy Docker Image to Kubernetes
-  hosts: localhost
-  connection: local
-
+- name: Deploy Docker container
+  hosts: all
   vars_files:
-    - vault.yml  
-
-  vars:
-    image_name: my-country-service
-    image_tag: v1
-    dockerfile_path: './'
+    - vault.yml
 
   tasks:
     - name: Log in to Docker Hub
       community.general.docker_login:
-        username: "{{ dockerhub_username }}"
-        password: "{{ dockerhub_password }}"
-        reauthorize: yes
+        username: "{{ docker_registry_username }}"
+        password: "{{ docker_registry_password }}" # Use environment variable for password
+        # password: "{{ docker_hub_password_from_vault }}" # Use an Ansible Vault for sensitive data
+        reauthorize: yes # Re-authenticate even if credentials exist
 
     - name: Build Docker image
       docker_image:
         build:
           path: "{{ dockerfile_path }}"
-        name: "{{ dockerhub_username }}/{{ image_name }}:{{ image_tag }}"
+        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
         source: build
         state: present
         tag: "{{ image_tag }}"
 
     - name: Push the Docker image to Docker Hub
       docker_image:
-        name: "{{ dockerhub_username }}/{{ image_name }}:{{ image_tag }}"
+        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
         tag: "{{ image_tag }}"
         push: yes
         source: local
 
-    - name: Pull Docker image (optional)
+    - name: Pull Docker image (optional, for verification or on target nodes)
       docker_image:
-        name: "{{ dockerhub_username }}/{{ image_name }}:{{ image_tag }}"
+        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
         tag: "{{ image_tag }}"
         source: pull
 
@@ -45,7 +39,7 @@
         state: present
         namespace: jenkins
         src: my-deployment.yaml
-        kubeconfig: config
+        kubeconfig: config # Path to your kubeconfig file
 
     - name: Apply Kubernetes Service
       kubernetes.core.k8s:

@@ -129,11 +129,7 @@ pipeline {
         stage('Deploy using Ansible playbook') {
             steps {
                 dir('country-service/country-service') {
-                    withCredentials([file(credentialsId: 'ansible-vault-pass', variable: 'VAULT_PASS_FILE')]) {
-                        sh '''
-                            ansible-playbook -i hosts playbookCICD.yml --vault-password-file $VAULT_PASS_FILE
-                        '''
-                    }
+                    sh 'ansible-playbook -i hosts playbookCICD.yml'
                 }
             }
         }
