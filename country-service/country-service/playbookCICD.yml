@@ -4,11 +4,11 @@
   connection: local
 
   vars:
-    image_name: my-country-service
-    image_tag: v1
-    dockerfile_path: './'
-    docker_registry_username: Saisir votre accès
-    docker_registry_password: Saisir votre accès
+  image_name: my-country-service
+  image_tag: v1
+  dockerfile_path: './'
+  docker_registry_username: "{{ docker_registry_username }}"
+  docker_registry_password: "{{ docker_registry_password }}
 
   tasks:
     - name: Log in to Docker Hub
