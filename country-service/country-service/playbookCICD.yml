@@ -30,34 +30,21 @@
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Check for Jenkins-provided venv python
-      ansible.builtin.stat:
-        path: /var/jenkins_home/ansible_venv/bin/python3
-      register: jenkins_venv
-      changed_when: false
-
-    - name: Use Jenkins venv python if present
-      ansible.builtin.set_fact:
-        ansible_python_interpreter: /var/jenkins_home/ansible_venv/bin/python3
-      when: jenkins_venv.stat.exists
-
     - name: Check if system python has kubernetes installed
       ansible.builtin.command:
         cmd: /usr/bin/python3 -c "import kubernetes; print(kubernetes.__version__)"
       register: kubernetes_check
       failed_when: false
       changed_when: false
-      when: not jenkins_venv.stat.exists
 
     - name: Install kubernetes for system python using user site-packages if missing
       ansible.builtin.command:
         cmd: /usr/bin/python3 -m pip install --user kubernetes --no-cache-dir
-      when: "(kubernetes_check is defined and (kubernetes_check['rc'] is defined and kubernetes_check['rc'] != 0)) and not jenkins_venv.stat.exists"
+      when: kubernetes_check.rc != 0
 
     - name: Set ansible to use system python interpreter
       ansible.builtin.set_fact:
         ansible_python_interpreter: /usr/bin/python3
-      when: not jenkins_venv.stat.exists
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
