@@ -1,56 +1,56 @@
 
-pipeline {
-    agent any
+// pipeline {
+//     agent any
 
-    tools {
-        maven 'M2_HOME' 
-    }
+//     tools {
+//         maven 'M2_HOME' 
+//     }
 
-    environment {
-        DOCKER_HUB_USER = 'amine339'
-    }
+//     environment {
+//         DOCKER_HUB_USER = 'amine339'
+//     }
 
-    stages {
-        stage('Checkout code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/GannouniAmine/devops2.git'
-            }
-        }
+//     stages {
+//         stage('Checkout code') {
+//             steps {
+//                 git branch: 'main', url: 'https://github.com/GannouniAmine/devops2.git'
+//             }
+//         }
 
-        stage('Build Maven') {
-            steps {
-                dir('country-service') {
-                    sh 'chmod +x mvnw'
-                    sh './mvnw clean install'
-                }
-            }
-        }
+//         stage('Build Maven') {
+//             steps {
+//                 dir('country-service') {
+//                     sh 'chmod +x mvnw'
+//                     sh './mvnw clean install'
+//                 }
+//             }
+//         }
 
-        stage('Build Docker File') {
-            steps {
-                dir('country-service') {
-                    sh 'docker build -t my-country-service:${BUILD_NUMBER} .'
-                    withCredentials([string(credentialsId: 'dockerhub-password', variable: 'dockerhubpwd')]) {
-                         sh 'docker login -u amine339 -p ${dockerhubpwd}'
-                    }
-                    sh 'docker tag my-country-service:${BUILD_NUMBER} amine339/my-country-service:${BUILD_NUMBER}'
-                    sh 'docker push amine339/my-country-service:${BUILD_NUMBER}'
-                }
-            }
-        }
+//         stage('Build Docker File') {
+//             steps {
+//                 dir('country-service') {
+//                     sh 'docker build -t my-country-service:${BUILD_NUMBER} .'
+//                     withCredentials([string(credentialsId: 'dockerhub-password', variable: 'dockerhubpwd')]) {
+//                          sh 'docker login -u amine339 -p ${dockerhubpwd}'
+//                     }
+//                     sh 'docker tag my-country-service:${BUILD_NUMBER} amine339/my-country-service:${BUILD_NUMBER}'
+//                     sh 'docker push amine339/my-country-service:${BUILD_NUMBER}'
+//                 }
+//             }
+//         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                 withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG')]) {
+//         stage('Deploy to Kubernetes') {
+//             steps {
+//                  withCredentials([file(credentialsId: 'kubeconfig-file', variable: 'KUBECONFIG')]) {
                    
-                       sh 'kubectl apply -f country-service/country-service/my-deployment.yaml'
-                       sh 'kubectl apply -f country-service/country-service/service.yaml'
+//                        sh 'kubectl apply -f country-service/country-service/my-deployment.yaml'
+//                        sh 'kubectl apply -f country-service/country-service/service.yaml'
                     
-                }
-            }
-        }
-    }
-}
+//                 }
+//             }
+//         }
+//     }
+// }
 
 
 
@@ -106,3 +106,44 @@ pipeline {
 }
 */
 
+pipeline {
+    agent any
+    tools {
+        maven 'mymaven'
+    }
+    stages {
+        stage('Checkout code')
+        {
+            steps {
+                git branch: 'main', url: 'https://github.com/GannouniAmine/devops2'
+            }
+        }
+
+        stage('Build maven')
+        {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Deploy using Ansible playbook') {
+            steps {
+                script {
+                    sh 'ansible-playbook -i hosts playbookCICD.yml --check'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            // Clean up or perform post-build actions
+            cleanWs()
+        }
+        success {
+            echo 'Ansible playbook executed successfully!'
+        }
+        failure {
+            echo 'Ansible playbook execution failed!'
+        }
+    }
+}

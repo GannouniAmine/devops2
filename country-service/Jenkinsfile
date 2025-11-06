@@ -8,7 +8,7 @@ pipeline {
 
     environment {
         SONARQUBE_ENV = 'SonarQubeServer'
-        MAVEN_OPTS = '-Dmaven.test.failure.ignore=true' // Ignore test failures
+        MAVEN_OPTS = '-Dmaven.test.failure.ignore=true' 
     }
 
     stages {
