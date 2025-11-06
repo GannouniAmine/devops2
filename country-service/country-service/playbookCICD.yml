@@ -3,7 +3,7 @@
   hosts: localhost # Or your build/deployment server
   connection: local
   vars_files:
-    - vault.yml
+    - ./vault.yml
 
   tasks:
     - name: Log in to Docker Hub
