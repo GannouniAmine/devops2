@@ -128,7 +128,7 @@ pipeline {
 
         stage('Deploy using Ansible playbook') {
             steps {
-                script {
+                dir('country-service/country-service') {
                     sh 'ansible-playbook -i hosts playbookCICD.yml --check'
                 }
             }
