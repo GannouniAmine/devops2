@@ -128,7 +128,7 @@ pipeline {
 
         stage('Deploy using Ansible playbook') {
             steps {
-                dir('country-service/country-service') {
+                dir('/home/amine/.jenkins/workspace/piplineAnsible/country-service/country-service') {
                     withEnv([
                         "DOCKER_USERNAME=amine339",
                         "DOCKER_PASSWORD=2014@Tunis",
