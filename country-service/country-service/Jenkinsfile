@@ -111,12 +111,6 @@ pipeline {
     tools {
         maven 'M2_HOME'
     }
-    options {
-        timestamps()
-    }
-    environment {
-        ANSIBLE_PYTHON_INTERPRETER = "$HOME/.local/venv/bin/python3"
-    }
     stages {
         stage('Checkout code') {
             steps {
@@ -132,32 +126,15 @@ pipeline {
             }
         }
 
-        stage('Prepare Environment') {
-            steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y python3.13-venv python3-pip
-                    python3 -m venv $HOME/.local/venv
-                    $HOME/.local/venv/bin/pip install kubernetes
-                '''
-            }
-        }
-
         stage('Deploy using Ansible playbook') {
-    steps {
-        dir('country-service/country-service') {
-            withEnv([
-                "DOCKER_USERNAME=amine339",
-                "DOCKER_PASSWORD=2014@Tunis"
-            ]) {
-                sh '''
-                ansible-playbook -i hosts playbookCICD.yml \
-                --extra-vars "docker_registry_username=$DOCKER_USERNAME docker_registry_password=$DOCKER_PASSWORD"
-                '''
+            steps {
+                dir('country-service/country-service') {
+                    script {
+                        sh 'ansible-playbook -i hosts playbookCICD.yml --check'
+                    }
+                }
             }
         }
-    }
-}
     }
     post {
         always {
