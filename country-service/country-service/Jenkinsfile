@@ -112,20 +112,17 @@ pipeline {
         maven 'M2_HOME'
     }
     stages {
-        stage('Checkout code')
-        {
+        stage('Checkout code') {
             steps {
                 git branch: 'main', url: 'https://github.com/GannouniAmine/devops2'
             }
         }
 
-        stage('Build maven')
-        {
+        stage('Build maven') {
             steps {
                 dir('country-service/country-service') {
                     sh 'mvn clean install'
                 }
-            }
             }
         }
 
