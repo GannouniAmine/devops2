@@ -127,14 +127,20 @@ pipeline {
         }
 
         stage('Deploy using Ansible playbook') {
-            steps {
-                dir('country-service/country-service') {
-                    script {
-                        sh 'ansible-playbook -i hosts playbookCICD.yml --check'
-                    }
-                }
+    steps {
+        dir('country-service/country-service') {
+            withEnv([
+                "DOCKER_USERNAME=amine339",
+                "DOCKER_PASSWORD=2014@Tunis"
+            ]) {
+                sh '''
+                ansible-playbook -i hosts playbookCICD.yml \
+                --extra-vars "docker_registry_username=$DOCKER_USERNAME docker_registry_password=$DOCKER_PASSWORD"
+                '''
             }
         }
+    }
+}
     }
     post {
         always {
