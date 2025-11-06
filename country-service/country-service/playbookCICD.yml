@@ -1,6 +1,6 @@
 ---
 - name: Build and Deploy Docker Image to Kubernetes
-  hosts: localhost # Or your build/deployment server
+  hosts: localhost
   connection: local
   vars_files:
     - ./vault.yml
@@ -8,39 +8,32 @@
   tasks:
     - name: Log in to Docker Hub
       community.general.docker_login:
-        username: "{{ docker_registry_username }}"
-        password: "{{ docker_registry_password }}" # Use environment variable for password
-        # password: "{{ docker_hub_password_from_vault }}" # Use an Ansible Vault for sensitive data
-        reauthorize: yes # Re-authenticate even if credentials exist
+        username: "{{ dockerhub_username }}"
+        password: "{{ dockerhub_password }}"
+        reauthorize: yes
 
     - name: Build Docker image
       docker_image:
         build:
-          path: "{{ dockerfile_path }}"
-        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
+          path: "{{ dockerfile_path | default('./') }}"
+        name: "{{ dockerhub_username }}/{{ image_name | default('country-service') }}:{{ image_tag | default('0.0.11') }}"
         source: build
         state: present
-        tag: "{{ image_tag }}"
+        tag: "{{ image_tag | default('0.0.11') }}"
 
     - name: Push the Docker image to Docker Hub
       docker_image:
-        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
-        tag: "{{ image_tag }}"
+        name: "{{ dockerhub_username }}/{{ image_name | default('country-service') }}:{{ image_tag | default('0.0.11') }}"
+        tag: "{{ image_tag | default('0.0.11') }}"
         push: yes
         source: local
-
-    - name: Pull Docker image (optional, for verification or on target nodes)
-      docker_image:
-        name: "{{ docker_registry_username }}/{{ image_name }}:{{ image_tag }}"
-        tag: "{{ image_tag }}"
-        source: pull
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
         state: present
         namespace: jenkins
         src: my-deployment.yaml
-        kubeconfig: config # Path to your kubeconfig file
+        kubeconfig: config
 
     - name: Apply Kubernetes Service
       kubernetes.core.k8s:
