@@ -126,12 +126,22 @@ pipeline {
             }
         }
 
+        stage('Prepare Python Environment') {
+            steps {
+                sh '''
+                    python3 -m venv /tmp/test-venv
+                    /tmp/test-venv/bin/pip install kubernetes
+                '''
+            }
+        }
+
         stage('Deploy using Ansible playbook') {
             steps {
                 dir('country-service/country-service') {
                     withEnv([
                         "DOCKER_USERNAME=amine339",
-                        "DOCKER_PASSWORD=2014@Tunis"
+                        "DOCKER_PASSWORD=2014@Tunis",
+                        "ANSIBLE_PYTHON_INTERPRETER=/tmp/test-venv/bin/python3"
                     ]) {
                         sh '''
                         ansible-playbook -i hosts playbookCICD.yml

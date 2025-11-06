@@ -32,20 +32,20 @@
 
     - name: Create virtual environment
       ansible.builtin.command:
-        cmd: python3 -m venv "{{ ansible_env.HOME }}/.local/venv"
-        creates: "{{ ansible_env.HOME }}/.local/venv"
+        cmd: python3 -m venv /tmp/test-venv
+        creates: /tmp/test-venv
 
     - name: Install kubernetes package in virtual environment
       ansible.builtin.pip:
         name: kubernetes
         state: present
-        virtualenv: "{{ ansible_env.HOME }}/.local/venv"
+        virtualenv: /tmp/test-venv
       environment:
-        PATH: "{{ ansible_env.HOME }}/.local/venv/bin:{{ ansible_env.PATH }}"
+        PATH: "/tmp/test-venv/bin:{{ ansible_env.PATH }}"
 
     - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
-        ansible_python_interpreter: "{{ ansible_env.HOME }}/.local/venv/bin/python3"
+        ansible_python_interpreter: /tmp/test-venv/bin/python3
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
