@@ -30,21 +30,41 @@
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Check if system python has kubernetes installed
-      ansible.builtin.command:
-        cmd: /usr/bin/python3 -c "import kubernetes; print(kubernetes.__version__)"
-      register: kubernetes_check
-      failed_when: false
-      changed_when: false
+    - name: Create virtual environment directory
+      ansible.builtin.file:
+        path: /tmp/test-venv
+        state: directory
+        mode: '0755'
+        owner: "{{ ansible_user_id }}"
 
-    - name: Install kubernetes for system python using user site-packages if missing
+    - name: Create virtual environment
       ansible.builtin.command:
-        cmd: /usr/bin/python3 -m pip install --user kubernetes --no-cache-dir
-      when: kubernetes_check.rc != 0
+        cmd: python3 -m venv /tmp/test-venv
+        creates: /tmp/test-venv
+      environment:
+        PYTHONPATH: ""
 
-    - name: Set ansible to use system python interpreter
+    - name: Fix virtual environment permissions
+      ansible.builtin.file:
+        path: /tmp/test-venv
+        state: directory
+        recurse: yes
+        mode: '0755'
+        owner: "{{ ansible_user_id }}"
+
+    - name: Install kubernetes package in virtual environment
+      ansible.builtin.pip:
+        name: kubernetes
+        state: present
+        virtualenv: /tmp/test-venv
+        extra_args: --no-cache-dir
+      environment:
+        PATH: "/tmp/test-venv/bin:{{ ansible_env.PATH }}"
+        PYTHONPATH: ""
+
+    - name: Set fact for Python interpreter
       ansible.builtin.set_fact:
-        ansible_python_interpreter: /usr/bin/python3
+        ansible_python_interpreter: /tmp/test-venv/bin/python3
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
