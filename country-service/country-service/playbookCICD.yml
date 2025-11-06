@@ -61,7 +61,7 @@
 
     - name: Bootstrap pip into venv using get-pip.py
       ansible.builtin.command:
-        cmd: "{{ venv_path }}/bin/python {{ venv_path }}/get-pip.py"
+        cmd: "{{ venv_path }}/bin/python3 {{ venv_path }}/get-pip.py"
         creates: "{{ venv_path }}/bin/pip"
       when: not venv_pip_stat.stat.exists
 
