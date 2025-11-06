@@ -30,59 +30,21 @@
         tag: "{{ image_tag }}"
         source: pull
 
-    - name: Ensure workspace virtualenv path exists (user-writable)
-      ansible.builtin.set_fact:
-        venv_path: "{{ playbook_dir | default('./') | regex_replace('/$','') }}/.venv"
-
-    - name: Create virtual environment directory (workspace .venv)
-      ansible.builtin.file:
-        path: "{{ venv_path }}"
-        state: directory
-        mode: '0755'
-
-    - name: Create virtual environment inside workspace
+    - name: Check if system python has kubernetes installed
       ansible.builtin.command:
-        cmd: python3 -m venv "{{ venv_path }}"
-        creates: "{{ venv_path }}"
-      environment:
-        PYTHONPATH: ""
+        cmd: /usr/bin/python3 -c "import kubernetes; print(kubernetes.__version__)"
+      register: kubernetes_check
+      failed_when: false
+      changed_when: false
 
-    - name: Check if venv pip exists
-      ansible.builtin.stat:
-        path: "{{ venv_path }}/bin/pip"
-      register: venv_pip_stat
-
-    - name: Download get-pip.py to venv if pip is missing
-      ansible.builtin.get_url:
-        url: https://bootstrap.pypa.io/get-pip.py
-        dest: "{{ venv_path }}/get-pip.py"
-        mode: '0755'
-      when: not venv_pip_stat.stat.exists
-
-    - name: Bootstrap pip into venv using get-pip.py
+    - name: Install kubernetes for system python using user site-packages if missing
       ansible.builtin.command:
-        cmd: "{{ venv_path }}/bin/python3 {{ venv_path }}/get-pip.py"
-        creates: "{{ venv_path }}/bin/pip"
-      when: not venv_pip_stat.stat.exists
+        cmd: /usr/bin/python3 -m pip install --user kubernetes --no-cache-dir
+      when: kubernetes_check.rc != 0
 
-    - name: Remove get-pip.py from venv
-      ansible.builtin.file:
-        path: "{{ venv_path }}/get-pip.py"
-        state: absent
-      when: not venv_pip_stat.stat.exists
-
-    - name: Install kubernetes package in virtual environment
-      ansible.builtin.pip:
-        name: kubernetes
-        state: present
-        executable: "{{ venv_path }}/bin/pip"
-        extra_args: --no-cache-dir
-      environment:
-        PATH: "{{ venv_path }}/bin:{{ ansible_env.PATH }}"
-
-    - name: Set fact for Python interpreter to venv
+    - name: Set ansible to use system python interpreter
       ansible.builtin.set_fact:
-        ansible_python_interpreter: "{{ venv_path }}/bin/python3"
+        ansible_python_interpreter: /usr/bin/python3
 
     - name: Apply Kubernetes Deployment
       kubernetes.core.k8s:
