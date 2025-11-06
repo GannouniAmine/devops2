@@ -132,7 +132,6 @@ pipeline {
                     withEnv([
                         "DOCKER_USERNAME=amine339",
                         "DOCKER_PASSWORD=2014@Tunis",
-                        "ANSIBLE_PYTHON_INTERPRETER=/tmp/test-venv/bin/python3"
                     ]) {
                         sh '''
                         ansible-playbook -i hosts playbookCICD.yml
