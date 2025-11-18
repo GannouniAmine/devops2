@@ -110,11 +110,11 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME'
+        maven 'M2_HOME' // Assure-toi que Maven est installé dans Jenkins
     }
 
     environment {
-        SONARQUBE_TOKEN = credentials('sonar-token')
+        SONARQUBE_TOKEN = credentials('sonar-token') // Ton token SonarQube
     }
 
     stages {
@@ -125,7 +125,7 @@ pipeline {
             }
         }
 
-        stage('Run Unit Tests & Build') {
+        stage('Build & Unit Tests') {
             steps {
                 dir('country-service/country-service') {
                     sh 'mvn clean verify'
@@ -139,20 +139,20 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-        steps {
-            dir('country-service/country-service') {
-                withSonarQubeEnv(installationName: 'MySonarQubeServer', credentialsId: 'sonartoken') {
-                    sh """
-                        mvn sonar:sonar \
-                        -Dsonar.projectKey=country-service \
-                        -Dsonar.login=$SONAR_AUTH_TOKEN \
-                        -Dsonar.host.url=$SONAR_HOST_URL
-                    """
+            steps {
+                dir('country-service/country-service') {
+                    // Avec SonarQube installé dans Jenkins (MySonarQubeServer)
+                    withSonarQubeEnv('MySonarQubeServer') {
+                        sh """
+                            mvn sonar:sonar \
+                            -Dsonar.projectKey=country-service \
+                            -Dsonar.login=$SONARQUBE_TOKEN \
+                            -Dsonar.host.url=$SONAR_HOST_URL
+                        """
+                    }
                 }
             }
         }
-    }
-
 
         stage('Quality Gate') {
             steps {
@@ -162,7 +162,7 @@ pipeline {
             }
         }
 
-        stage('Deploy using Ansible') {
+        stage('Deploy with Ansible') {
             steps {
                 dir('country-service/country-service') {
                     sh 'ansible-playbook -i hosts playbookCICD.yml --vault-password-file vault_pass.txt'
@@ -173,7 +173,10 @@ pipeline {
 
     post {
         always {
-            cleanWs()
+            script {
+                // Nettoyage du workspace sans erreur
+                cleanWs()
+            }
         }
         success {
             echo 'Pipeline executed successfully!'
