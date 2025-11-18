@@ -110,18 +110,14 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME' // Assure-toi que Maven est installé dans Jenkins
-    }
-
-    environment {
-        SONARQUBE_TOKEN = credentials('sonar-token') // Ton token SonarQube
+        maven 'M2_HOME' // Assure-toi que Maven est configuré dans Jenkins
     }
 
     stages {
 
         stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/GannouniAmine/devops2'
+                git branch: 'main', url: 'https://github.com/GannouniAmine/devops2', credentialsId: 'github-token'
             }
         }
 
@@ -133,6 +129,7 @@ pipeline {
             }
             post {
                 always {
+                    // Publication des rapports de tests unitaires
                     junit 'country-service/country-service/target/surefire-reports/*.xml'
                 }
             }
@@ -141,12 +138,12 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('country-service/country-service') {
-                    // Avec SonarQube installé dans Jenkins (MySonarQubeServer)
+                    // Utilise la configuration SonarQube Jenkins
                     withSonarQubeEnv('MySonarQubeServer') {
                         sh """
                             mvn sonar:sonar \
                             -Dsonar.projectKey=country-service \
-                            -Dsonar.login=$SONARQUBE_TOKEN \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN \
                             -Dsonar.host.url=$SONAR_HOST_URL
                         """
                     }
@@ -173,8 +170,8 @@ pipeline {
 
     post {
         always {
+            // Nettoyage du workspace correctement dans le contexte Node
             script {
-                // Nettoyage du workspace sans erreur
                 cleanWs()
             }
         }
