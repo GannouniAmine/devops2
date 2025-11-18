@@ -108,25 +108,61 @@ pipeline {
 
 pipeline {
     agent any
+
     tools {
         maven 'M2_HOME'
     }
+
+    environment {
+        SONARQUBE_TOKEN = credentials('sonar-token')
+    }
+
     stages {
-        stage('Checkout code') {
+
+        stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/GannouniAmine/devops2'
             }
         }
 
-        stage('Build maven') {
+        stage('Run Unit Tests & Build') {
             steps {
                 dir('country-service/country-service') {
-                    sh 'mvn clean install'
+                    sh 'mvn clean verify'
+                }
+            }
+            post {
+                always {
+                    junit 'country-service/country-service/target/surefire-reports/*.xml'
                 }
             }
         }
 
-        stage('Deploy using Ansible playbook') {
+        stage('SonarQube Analysis') {
+        steps {
+            dir('country-service/country-service') {
+                withSonarQubeEnv(installationName: 'MySonarQubeServer', credentialsId: 'sonartoken') {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=country-service \
+                        -Dsonar.login=$SONAR_AUTH_TOKEN \
+                        -Dsonar.host.url=$SONAR_HOST_URL
+                    """
+                }
+            }
+        }
+    }
+
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Deploy using Ansible') {
             steps {
                 dir('country-service/country-service') {
                     sh 'ansible-playbook -i hosts playbookCICD.yml --vault-password-file vault_pass.txt'
@@ -134,16 +170,16 @@ pipeline {
             }
         }
     }
+
     post {
         always {
-            // Clean up or perform post-build actions
             cleanWs()
         }
         success {
-            echo 'Ansible playbook executed successfully!'
+            echo 'Pipeline executed successfully!'
         }
         failure {
-            echo 'Ansible playbook execution failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
