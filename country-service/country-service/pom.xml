@@ -28,7 +28,7 @@
     </properties>
 
     <dependencies>
-        <!-- ===== DÉPENDANCES PRINCIPALES ===== -->
+        <!-- DEPENDANCES PRINCIPALES -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -42,7 +42,7 @@
             <artifactId>spring-boot-starter-data-rest</artifactId>
         </dependency>
         
-        <!-- Base de données -->
+        <!-- Base de donnees -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -70,7 +70,7 @@
             <scope>provided</scope>
         </dependency>
         
-        <!-- ===== DÉPENDANCES DE TEST ===== -->
+        <!-- DEPENDANCES DE TEST -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -115,7 +115,7 @@
                 </configuration>
             </plugin>
 
-            <!-- 🔥 PLUGIN ESSENTIEL POUR LES TESTS -->
+            <!-- PLUGIN ESSENTIEL POUR LES TESTS -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
