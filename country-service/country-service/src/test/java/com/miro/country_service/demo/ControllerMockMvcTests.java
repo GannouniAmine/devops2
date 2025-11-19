@@ -23,30 +23,21 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(CountryController.class) 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ControllerMockMvcTests {
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
 
-    @Mock
-    CountryService countryService;
-
-    @InjectMocks
-    CountryController countryController;
-
-    List<Country> mycountries;
-    Country country;
+    @MockBean 
+    private CountryService countryService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeEach
-    void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(countryController).build();
-    }
+    private List<Country> mycountries;
+    private Country country;
 
     @Test
     @Order(1)
@@ -61,8 +52,7 @@ class ControllerMockMvcTests {
                .andExpect(status().isFound())
                .andExpect(jsonPath("$.length()").value(2))
                .andExpect(jsonPath("$[0].name").value("India"))
-               .andExpect(jsonPath("$[1].name").value("USA"))
-               .andDo(MockMvcResultHandlers.print());
+               .andExpect(jsonPath("$[1].name").value("USA"));
     }
 
     @Test

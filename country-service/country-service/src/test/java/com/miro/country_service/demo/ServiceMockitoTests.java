@@ -7,7 +7,7 @@ import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,23 +19,27 @@ import static org.mockito.Mockito.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ServiceMockitoTests {
     
-    @Mock
-    CountryRepository countryrep;
+    @MockBean
+    private CountryRepository countryRepository;
     
-    @InjectMocks
-    CountryService countryService;
+    @Autowired 
+    private CountryService countryService;
 
-    public List<Country> mycountries;
+    private List<Country> mycountries;
     
     @Test
     @Order(1)
     void test_getAllCountries() {
-        mycountries = new ArrayList<Country>();
+        mycountries = new ArrayList<>();
         mycountries.add(new Country(1,"India","Delhi"));
         mycountries.add(new Country(2,"USA","Washington"));        
         
-        when(countryrep.findAll()).thenReturn(mycountries);
-        assertEquals(2, countryService.getAllCountries().size());
+        when(countryRepository.findAll()).thenReturn(mycountries);
+        
+        List<Country> result = countryService.getAllCountries();
+        
+        assertEquals(2, result.size());
+        verify(countryRepository, times(1)).findAll();
     }
     
     @Test
