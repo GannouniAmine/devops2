@@ -2,7 +2,7 @@ package com.miro.country_service.demo;
 
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.controllers.CountryController;
-import com.miro.country_service.services.CountryService;        
+import com.miro.country_service.services.CountryService;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -43,7 +43,7 @@ class ControllerMockitoTests {
         assertEquals(2, response.getBody().size());
         verify(countryService, times(1)).getAllCountries();
     }
-    
+
     @Test
     @Order(2)
     void test_getCountryById() {
