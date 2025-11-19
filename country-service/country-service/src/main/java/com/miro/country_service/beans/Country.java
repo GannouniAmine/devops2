@@ -10,15 +10,16 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@Table(name="country")
+@Table(name = "country")
 public class Country {
-	
-	@Id
-	@Column(name="id")
-	private int idCountry;
-	@Column(name="name_country")
-	private String name;
-	@Column(name="capital_name")
-	private String capital;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "name_country")
+    private String name;
+
+    @Column(name = "capital_name")
+    private String capital;
 }
