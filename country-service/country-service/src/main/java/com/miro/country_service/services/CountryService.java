@@ -1,61 +1,45 @@
 package com.miro.country_service.services;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.repositories.CountryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
-@Component
 public class CountryService {
-	
-	@Autowired
-	CountryRepository countryRep;
-	
-	public List <Country> getAllCountries() {
-		List <Country> countries = countryRep.findAll();
-		return countries;		
-	}
-	
-	public Country getCountryById(int id) {
-		List <Country> countries = countryRep.findAll();
-		Country country = null;
-		
-		for (Country con:countries) {
-			if (con.getIdCountry()==id)
-				country = con;			
-		}
-		
-		return country;
-	}
-	
-	public Country getCountryByName (String name) {
-		List <Country> countries = countryRep.findAll();
-		Country country = null;
-		
-		for (Country con:countries) {
-			if (con.getName().equalsIgnoreCase(name))
-				country = con;			
-		}
-		
-		return country;
-	}
-	
-	public Country addCountry(Country country) {
-		return countryRep.save(country);
-	}
-	
-	public Country updateCountry(Country country) {
-		return countryRep.save(country);
-	}
-	
-	public void deleteCountry (Country country) {
-		countryRep.delete(country);
-	}
 
-	
+    @Autowired
+    private CountryRepository countryRepository;
+
+    public List<Country> getAllCountries() {
+        return countryRepository.findAll();
+    }
+
+    public Country getCountryById(int id) {
+        Optional<Country> country = countryRepository.findById(id);
+        return country.orElse(null);
+    }
+
+    public Country getCountryByName(String name) {
+        List<Country> countries = countryRepository.findAll();
+        return countries.stream()
+                .filter(c -> c.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public Country addCountry(Country country) {
+        return countryRepository.save(country);
+    }
+
+    public Country updateCountry(Country country) {
+        return countryRepository.save(country);
+    }
+
+    public void deleteCountry(Country country) {
+        countryRepository.delete(country);
+    }
 }

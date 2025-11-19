@@ -110,7 +110,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'M2_HOME' // Assure-toi que Maven est configuré dans Jenkins
+        maven 'M2_HOME' 
     }
 
     stages {
@@ -129,7 +129,6 @@ pipeline {
             }
             post {
                 always {
-                    // Publication des rapports de tests unitaires
                     junit 'country-service/country-service/target/surefire-reports/*.xml'
                 }
             }
@@ -138,7 +137,6 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir('country-service/country-service') {
-                    // Utilise la configuration SonarQube Jenkins
                     withSonarQubeEnv('MySonarQubeServer') {
                         sh """
                             mvn sonar:sonar \
