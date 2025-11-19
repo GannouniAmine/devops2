@@ -1,4 +1,4 @@
-package com.miro.country_service.controllers;
+package com.miro.country_service.demo;
 
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.services.CountryService;

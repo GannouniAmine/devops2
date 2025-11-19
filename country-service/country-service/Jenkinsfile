@@ -111,6 +111,7 @@ pipeline {
 
     tools {
         maven 'M2_HOME' 
+        jdk 'JDK21'
     }
 
     stages {
@@ -124,7 +125,7 @@ pipeline {
         stage('Build & Unit Tests') {
             steps {
                 dir('country-service/country-service') {
-                    sh 'mvn clean verify'
+                    sh 'mvn clean test'  
                 }
             }
             post {

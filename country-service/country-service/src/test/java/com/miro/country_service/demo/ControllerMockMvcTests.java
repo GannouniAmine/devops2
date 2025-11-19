@@ -1,4 +1,4 @@
-package com.miro.country_service.controllers;
+package com.miro.country_service.demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miro.country_service.beans.Country;
