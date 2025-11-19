@@ -5,7 +5,6 @@ import com.miro.country_service.beans.Country;
 import com.miro.country_service.controllers.CountryController;
 import com.miro.country_service.services.CountryService;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -23,17 +22,28 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ControllerMockMvcTests {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Mock
     private CountryService countryService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private AutoCloseable closeable;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private List<Country> mycountries;
     private Country country;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(new CountryController(countryService)).build();
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
 
     @Test
     @Order(1)

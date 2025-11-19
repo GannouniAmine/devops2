@@ -4,9 +4,9 @@ import com.miro.country_service.beans.Country;
 import com.miro.country_service.repositories.CountryRepository;
 import com.miro.country_service.services.CountryService;
 import org.junit.jupiter.api.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,17 +15,28 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ServiceMockitoTests {
     
-    @MockBean
+    @Mock
     private CountryRepository countryRepository;
     
-    @Autowired
+    @InjectMocks
     private CountryService countryService;
 
+    private AutoCloseable closeable;
+
     private List<Country> mycountries;
+    
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+    
+    @AfterEach
+    void tearDown() throws Exception {
+        closeable.close();
+    }
     
     @Test
     @Order(1)
