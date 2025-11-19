@@ -12,9 +12,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 public class CountryController {
-
-    @Autowired
     private CountryService countryService;
+
+    public CountryController(CountryService countryService) {
+        this.countryService = countryService;
+    }
 
     @GetMapping("/getcountries")
     public ResponseEntity<List<Country>> getCountries() {

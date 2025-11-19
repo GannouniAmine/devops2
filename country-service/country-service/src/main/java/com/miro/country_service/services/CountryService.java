@@ -11,9 +11,11 @@ import java.util.Optional;
 @Service
 public class CountryService {
 
-    @Autowired
     private CountryRepository countryRepository;
 
+	public CountryService(CountryRepository countryRepository) {
+        this.countryRepository = countryRepository;
+    }
     public List<Country> getAllCountries() {
         return countryRepository.findAll();
     }
