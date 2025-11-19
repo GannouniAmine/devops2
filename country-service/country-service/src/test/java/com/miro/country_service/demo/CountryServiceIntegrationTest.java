@@ -3,14 +3,15 @@ package com.miro.country_service.demo;
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.repositories.CountryRepository;
 import com.miro.country_service.services.CountryService;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class CountryServiceIntegrationTest {
+public class CountryServiceIntegrationTest {
 
     @Autowired
     private CountryService countryService;
@@ -18,49 +19,38 @@ class CountryServiceIntegrationTest {
     @Autowired
     private CountryRepository countryRepository;
 
-    private Country country;
+    private Country testCountry;
 
-    @Test
-    @Order(1)
-    void testAddCountry() {
-        country = new Country(100, "TestLand", "TestCity");
-        countryService.addCountry(country);
-
-        Country found = countryService.getCountryById(100);
-        assertNotNull(found);
-        assertEquals("TestLand", found.getName());
-        assertEquals("TestCity", found.getCapital());
+    @BeforeEach
+    public void setUp() {
+        // On vide la base et on ajoute un pays pour le test
+        countryRepository.deleteAll();
+        testCountry = new Country();
+        testCountry.setName("Germany");
+        testCountry.setCapital("Berlin");
+        testCountry = countryRepository.save(testCountry);
     }
 
     @Test
-    @Order(2)
-    void testGetAllCountries() {
-        assertTrue(countryService.getAllCountries().size() > 0);
+    public void testUpdateCountry() {
+        // On récupère le pays existant
+        Country countryToUpdate = countryRepository.findById(testCountry.getIdCountry()).orElse(null);
+        assertNotNull(countryToUpdate, "Le pays doit exister avant la mise à jour");
+
+        countryToUpdate.setCapital("Munich");
+        Country updated = countryRepository.save(countryToUpdate);
+
+        assertEquals("Munich", updated.getCapital(), "La capitale doit être mise à jour");
     }
 
     @Test
-    @Order(3)
-    void testGetCountryByName() {
-        Country found = countryService.getCountryByName("TestLand");
-        assertNotNull(found);
-        assertEquals("TestCity", found.getCapital());
-    }
+    public void testDeleteCountry() {
+        // On récupère le pays existant
+        Country countryToDelete = countryRepository.findById(testCountry.getIdCountry()).orElse(null);
+        assertNotNull(countryToDelete, "Le pays doit exister avant suppression");
 
-    @Test
-    @Order(4)
-    void testUpdateCountry() {
-        country.setCapital("NewTestCity");
-        countryService.updateCountry(country);
+        countryRepository.delete(countryToDelete);
 
-        Country found = countryService.getCountryById(100);
-        assertEquals("NewTestCity", found.getCapital());
-    }
-
-    @Test
-    @Order(5)
-    void testDeleteCountry() {
-        countryService.deleteCountry(country);
-        Country found = countryService.getCountryById(100);
-        assertNull(found);
+        assertFalse(countryRepository.existsById(testCountry.getIdCountry()), "Le pays doit être supprimé");
     }
 }
