@@ -111,7 +111,7 @@ pipeline {
 
     tools {
         maven 'M2_HOME' 
-        jdk 'JDK21'
+        jdk 'JDK17'
     }
 
     stages {
