@@ -2,7 +2,6 @@ package com.miro.country_service.controllers;
 
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.services.CountryService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

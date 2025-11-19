@@ -2,7 +2,6 @@ package com.miro.country_service.services;
 
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.repositories.CountryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
