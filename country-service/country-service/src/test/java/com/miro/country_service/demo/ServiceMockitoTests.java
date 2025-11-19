@@ -2,6 +2,7 @@ package com.miro.country_service.demo;
 
 import com.miro.country_service.beans.Country;
 import com.miro.country_service.repositories.CountryRepository;
+import com.miro.country_service.services.CountryService;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
