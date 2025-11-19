@@ -2,35 +2,31 @@ package com.miro.country_service.demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.miro.country_service.beans.Country;
-import com.miro.country_service.controllers.CountryController;  
-import com.miro.country_service.services.CountryService;       
+import com.miro.country_service.controllers.CountryController;
+import com.miro.country_service.services.CountryService;
 import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(CountryController.class) 
+@WebMvcTest(CountryController.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ControllerMockMvcTests {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean 
+    @MockBean
     private CountryService countryService;
 
     @Autowired
@@ -64,10 +60,9 @@ class ControllerMockMvcTests {
 
         mockMvc.perform(get("/api/getcountries/{id}", 1))
                .andExpect(status().isFound())
-               .andExpect(MockMvcResultMatchers.jsonPath("$.idCountry").value(1))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("India"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.capital").value("Delhi"))
-               .andDo(MockMvcResultHandlers.print());
+               .andExpect(jsonPath("$.idCountry").value(1))
+               .andExpect(jsonPath("$.name").value("India"))
+               .andExpect(jsonPath("$.capital").value("Delhi"));
     }
 
     @Test
@@ -79,9 +74,8 @@ class ControllerMockMvcTests {
 
         mockMvc.perform(get("/api/getcountries/name/{name}", "India"))
                .andExpect(status().isFound())
-               .andExpect(MockMvcResultMatchers.jsonPath("$.name").value("India"))
-               .andExpect(MockMvcResultMatchers.jsonPath("$.capital").value("Delhi"))
-               .andDo(MockMvcResultHandlers.print());
+               .andExpect(jsonPath("$.name").value("India"))
+               .andExpect(jsonPath("$.capital").value("Delhi"));
     }
 
     @Test
@@ -95,8 +89,7 @@ class ControllerMockMvcTests {
                .contentType(MediaType.APPLICATION_JSON)
                .content(objectMapper.writeValueAsString(country)))
                .andExpect(status().isCreated())
-               .andExpect(jsonPath("$.name").value("France"))
-               .andDo(MockMvcResultHandlers.print());
+               .andExpect(jsonPath("$.name").value("France"));
     }
 
     @Test
@@ -110,8 +103,7 @@ class ControllerMockMvcTests {
                .contentType(MediaType.APPLICATION_JSON)
                .content(objectMapper.writeValueAsString(country)))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.capital").value("Berlin"))
-               .andDo(MockMvcResultHandlers.print());
+               .andExpect(jsonPath("$.capital").value("Berlin"));
     }
 
     @Test
@@ -123,7 +115,6 @@ class ControllerMockMvcTests {
         doNothing().when(countryService).deleteCountry(country);
 
         mockMvc.perform(delete("/api/deletecountry/{id}", 1))
-               .andExpect(status().isNoContent())
-               .andDo(MockMvcResultHandlers.print());
+               .andExpect(status().isNoContent());
     }
 }

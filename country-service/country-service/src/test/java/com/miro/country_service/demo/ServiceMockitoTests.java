@@ -4,10 +4,10 @@ import com.miro.country_service.beans.Country;
 import com.miro.country_service.repositories.CountryRepository;
 import com.miro.country_service.services.CountryService;
 import org.junit.jupiter.api.*;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,7 @@ class ServiceMockitoTests {
     @MockBean
     private CountryRepository countryRepository;
     
-    @Autowired 
+    @Autowired
     private CountryService countryService;
 
     private List<Country> mycountries;
@@ -47,7 +47,7 @@ class ServiceMockitoTests {
     void test_getCountryByID() {
         Country country = new Country(1,"India","Delhi");
         
-        when(countryrep.findById(1)).thenReturn(Optional.of(country));
+        when(countryRepository.findById(1)).thenReturn(Optional.of(country));
         Country result = countryService.getCountryById(1);
         
         assertEquals(1, result.getIdCountry());
@@ -58,11 +58,11 @@ class ServiceMockitoTests {
     @Test
     @Order(3)
     void test_getCountryByName() {
-        mycountries = new ArrayList<Country>();
+        mycountries = new ArrayList<>();
         mycountries.add(new Country(1,"India","Delhi"));
         mycountries.add(new Country(2,"USA","Washington"));
         
-        when(countryrep.findAll()).thenReturn(mycountries);
+        when(countryRepository.findAll()).thenReturn(mycountries);
         Country result = countryService.getCountryByName("USA");
         
         assertEquals("USA", result.getName());
@@ -72,7 +72,7 @@ class ServiceMockitoTests {
     @Order(4)
     void test_addCountry() {
         Country country = new Country(3,"France","Paris");
-        when(countryrep.save(country)).thenReturn(country);
+        when(countryRepository.save(country)).thenReturn(country);
         
         Country result = countryService.addCountry(country);
         
@@ -84,7 +84,7 @@ class ServiceMockitoTests {
     @Order(5)
     void test_updateCountry() {
         Country country = new Country(3,"Germany","Berlin");
-        when(countryrep.save(country)).thenReturn(country);
+        when(countryRepository.save(country)).thenReturn(country);
         
         Country result = countryService.updateCountry(country);
         
@@ -98,13 +98,13 @@ class ServiceMockitoTests {
         Country country = new Country(3,"Germany","Berlin");
         countryService.deleteCountry(country);
         
-        verify(countryrep, times(1)).delete(country);
+        verify(countryRepository, times(1)).delete(country);
     }
     
     @Test
     @Order(7)
     void test_getCountryById_NotFound() {
-        when(countryrep.findById(999)).thenReturn(Optional.empty());
+        when(countryRepository.findById(999)).thenReturn(Optional.empty());
         
         Country result = countryService.getCountryById(999);
         
@@ -114,10 +114,10 @@ class ServiceMockitoTests {
     @Test
     @Order(8)
     void test_getCountryByName_NotFound() {
-        mycountries = new ArrayList<Country>();
+        mycountries = new ArrayList<>();
         mycountries.add(new Country(1,"India","Delhi"));
         
-        when(countryrep.findAll()).thenReturn(mycountries);
+        when(countryRepository.findAll()).thenReturn(mycountries);
         Country result = countryService.getCountryByName("NonExistent");
         
         assertNull(result);

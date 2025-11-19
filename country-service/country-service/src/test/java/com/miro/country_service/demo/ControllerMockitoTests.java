@@ -29,11 +29,6 @@ class ControllerMockitoTests {
     List<Country> mycountries;
     Country country;
 
-    @BeforeEach
-    void setUp() {
-        // Initialisation avant chaque test
-    }
-
     @Test
     @Order(1)
     void test_getAllCountries() {
@@ -48,7 +43,7 @@ class ControllerMockitoTests {
         assertEquals(2, response.getBody().size());
         verify(countryService, times(1)).getAllCountries();
     }
-
+    
     @Test
     @Order(2)
     void test_getCountryById() {
