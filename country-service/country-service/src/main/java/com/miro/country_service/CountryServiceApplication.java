@@ -1,18 +1,61 @@
-package com.miro.country_service;
+package com.miro.country_service.services;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import java.util.List;
 
-@SpringBootApplication
-public class CountryServiceApplication extends SpringBootServletInitializer {
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(CountryServiceApplication.class);
-    }
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-    public static void main(String[] args) {
-        SpringApplication.run(CountryServiceApplication.class, args);
-    }
+import com.miro.country_service.beans.Country;
+import com.miro.country_service.repositories.CountryRepository;
+
+@Service
+@Component
+public class CountryService {
+	
+	@Autowired
+	CountryRepository countryRep;
+	
+	public List <Country> getAllCountries() {
+		List <Country> countries = countryRep.findAll();
+		return countries;		
+	}
+	
+	public Country getCountryById(int id) {
+		List <Country> countries = countryRep.findAll();
+		Country country = null;
+		
+		for (Country con:countries) {
+			if (con.getIdCountry()==id)
+				country = con;			
+		}
+		
+		return country;
+	}
+	
+	public Country getCountryByName (String name) {
+		List <Country> countries = countryRep.findAll();
+		Country country = null;
+		
+		for (Country con:countries) {
+			if (con.getName().equalsIgnoreCase(name))
+				country = con;			
+		}
+		
+		return country;
+	}
+	
+	public Country addCountry(Country country) {
+		return countryRep.save(country);
+	}
+	
+	public Country updateCountry(Country country) {
+		return countryRep.save(country);
+	}
+	
+	public void deleteCountry (Country country) {
+		countryRep.delete(country);
+	}
+
+	
 }

@@ -13,18 +13,12 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 @Table(name="country")
 public class Country {
-
-    @Id
-    @Column(name="id")
-    private int idCountry;
-
-    @Column(name="name_country")
-    private String name;
-
-    @Column(name="capital_name")
-    private String capital;
-
-    @Column(name="population")
-    private int population; 
+	
+	@Id
+	@Column(name="id")
+	private int idCountry;
+	@Column(name="name_country")
+	private String name;
+	@Column(name="capital_name")
+	private String capital;
 }
-
