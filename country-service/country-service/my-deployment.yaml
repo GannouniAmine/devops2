@@ -11,10 +11,13 @@ spec:
     metadata:
       labels:
         app: country-service
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8082'
+        prometheus.io/path: '/actuator/prometheus'
     spec:
       containers:
         - name: country-service-container
           image: amine339/my-country-service:latest
           ports:
             - containerPort: 8082
-
