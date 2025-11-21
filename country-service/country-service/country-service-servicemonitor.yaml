@@ -11,7 +11,7 @@ spec:
       app: country-service
   namespaceSelector:
     matchNames:
-      - jenkins  # le namespace où est déployé ton service
+      - jenkins  # le namespace où est déployé le service
   endpoints:
     - port: http
       path: /actuator/prometheus
